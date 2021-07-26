@@ -1,0 +1,40 @@
+#This function writes the contaminant model used on expanded data
+  write("
+  model{
+  # Prior hyperparameters for discriminability
+  for(i in 1:part){
+    for(j in 1:6){
+      dtmp[j,i] ~ dnorm(0,1/3^2)T(0,)
+    }
+    d[i,1] = 0
+    d[i,2:7] = sort(dtmp[,i])
+  }
+
+  # Prior hyperparameters and pchoice criterion
+  for(i in 1:part){
+    k[i] ~ dnorm(0,1/4)
+    phi[i] ~ dbeta(1,10) 
+  }
+
+  # Likelihood
+  for(t in 1:(trials-1)){
+    for(i in 1:part){
+      z[t,i] ~ dbern(phi[i])
+      theta[t,i,1] = 1-phi(k[i]-d[i,stimulus[t,i]])
+      theta[t,i,2] = 0.5
+      y[t,i] ~ dbern(theta[t,i,z[t,i]+1])
+    }
+  }
+  for(i in 2:part){
+    theta[trials,i,1] = 1-phi(k[i]-d[i,stimulus[trials,i]])
+    theta[trials,i,2] = 0.5
+    y[trials,i] ~ dbern(theta[trials,i,1])
+  }
+
+  # Posterior predictive distribution
+  for(s in 1:7){
+    theta.ppd[s] = 1-phi(k[1]-d[1,s])
+    y.ppd[s] ~ dbern(theta.ppd[s])
+  }
+}
+","models/contaminant.txt")
