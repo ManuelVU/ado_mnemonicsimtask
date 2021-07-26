@@ -333,3 +333,13 @@ behavior.sim.c <- function(mean,variance,design.point){
   simulation <- rbinom(n = length(eta), size = 1, prob = prob.yes)
   return(simulation)
 }
+
+#### Kullback Leibler divergence for multivariate normal distributions ####
+klmnorm <- function(post.mu,post.sigma,prior.mu,prior.sigma){
+    # This function calculates the Kullback-Leibler divergence between 2 multivariate normal distributions
+    # KL(post||prior).
+  k <- length(post.mu)
+  fst.el <- sum(diag(solve(prior.sigma)%*%post.sigma))
+  divergence <- 1/2*(fst.el+(t(prior.mu-post.mu)%*%solve(prior.sigma)%*%(prior.mu-post.mu))-k+log(det(prior.sigma)/det(post.sigma)))
+  return(divergence)
+}
