@@ -23,4 +23,4 @@ There are 5 data files in the __data__ directory:
 
 * __signaldt.RData__: File contains the results of the analysis using the non-contaminant model. Results are stored in a list with multiple entries with two main elements, data and optimal:
     1. *sdt$data*: Contains the results of the analysis using the original stimulus sequence in the experiment in a trial by trial basis. The results are sotered as follows.
-        - *sdt$data$mean*: Array with posterior mean of the d' and k parameters. This array is divided in 4 dimentions, trial (192), parameter (k,d'_1,...,d'_{new})
+        - *sdt$data$mean*: Array with posterior mean of the d' and k parameters. This array is divided in 4 dimentions, trial (192), parameter (k,d'<sub>1</sub>,...,d'<sub>new</sub>)
