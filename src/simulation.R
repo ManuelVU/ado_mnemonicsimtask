@@ -1,7 +1,7 @@
 # This code simulates the behavior of new participants on the task 
 # using the posterior distribution of 3 participants of each age group 
 # to generate data, the chosen participants are those whom responses are 
-# closest to the 25, 50 and 75% accuracy in the task.
+# closest to the 25, 50 and 75% accuracy in the task. (Running this code may take several hours!)
 # Results are saved in the file 'data/simulation_multiple_designs.Rdata'
 
 rm(list=ls())
