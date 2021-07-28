@@ -1,11 +1,11 @@
-%% Analyze continuous MST
+%% Draw figures
 
 clear; close all;
 printFigures = true;
 
 %% Figures
 figureList = { ...
-     % 'basicModel'; ...
+     'sdtModel'; ...
      % 'typeDistribution'; ...
     };
 
@@ -17,7 +17,7 @@ load pantoneColors pantone;
 for figureIdx = 1:numel(figureList)
     switch figureList{figureIdx}
         
-        case 'basicModel'
+        case 'sdtModel'
             
             k = 1.75;
             dL = [0 0.75 1.5 2 2.5 3 3.5];
@@ -52,7 +52,7 @@ for figureIdx = 1:numel(figureList)
                 'ticklength' , [0.01 0]              , ...
                 'layer'      , 'top'                 , ...
                 'fontsize'   , fontSize              );
-            xlabel('Memory Strength', 'fontsize', fontSize+4);
+            xlabel('Stimulus Novelty', 'fontsize', fontSize+4);
             
            for idx = 1:length(dL)
                

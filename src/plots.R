@@ -198,7 +198,58 @@ for(aa in 1:ages){
   }
 }
 
-#### FIgure 8: KL for simulated experimental designs and ado ####
+#### Figure 8: proportion of used stimulus by trial ####
+col.l <- c(rgb(0.5843,0.3216,0.3176),
+           rgb(0.9176,0.8510,0.5451),
+           rgb(0.8322,0.8071,0.5859),
+           rgb(0.7467,0.7631,0.6267),
+           rgb(0.6612,0.7192,0.6675),
+           rgb(0.5757,0.6753,0.7082),
+           rgb(0.4902,0.6314,0.7490))
+prop.time.p <- array(NA,dim=c(7,192,20,2))
+
+for(a in 1:ages){
+  for(p in 1:n.sub){
+    pp <- table(results$st[,p,a])
+    for(t in 1:trials){
+      for(s in 1:parameters){
+        prop.time.p[s,t,p,a] <- sum(results$st[sdt$optimal$expdes[1:t,p,a],p,a]==s)/pp[s]
+      }
+    } 
+  }
+}
+
+age.name <- c('Young','Elderly')
+ylable <- c('Old','Lure 1','Lure 2','Lure 3','Lure 4','Lure 5','New')
+dist <- c(rep(c(1,2),3),1)
+pdf(file='figures/proportionst_time.pdf',width=8,height = 4)
+par(oma=c(2.3,3,1,1))
+layout(t(c(1,2)))
+par(mai=c(0.3,0.3,0.2,0.1),xaxs="i",yaxs='i')
+for(a in 1:ages){
+  plot(0,0,xlim=c(0,trials+1),ylim=c(0,1.05),axes=F,ann=F,type='n')
+  box(bty='l')
+  axis(1,at=c(1,50,100,150,192),cex.axis=1.2)
+  mtext(paste(age.name[a]),side=3,cex=1.3,line=0.5)
+  if(a==1){
+    axis(2,at=seq(0,1,0.2),labels=c('0',seq(0.2,0.8,0.2),'1'),cex.axis=1.2,las=2,
+         hadj = 0.8)
+    mtext(text = 'Trial',cex=1.3,side=1,line=2.6)
+  }
+  else{
+    axis(2,at=seq(0,1,0.2),labels=rep('',6),cex.axis=1.2,las=2,
+         hadj = 0.8)
+    legend('bottomright',legend = ylable,col=col.l,lty=dist,lwd=2,bty='n',cex=0.86)
+  }
+  for(s in 1:parameters){
+    lines(seq(1,trials),rowMeans(prop.time.p[s,,,a]),col=col.l[s],type='s',
+          lty=dist[s],lwd=3)
+  }
+}
+mtext(text = 'Proportion of stimulus presented',cex=1.3,outer=T,side=2,line=1)
+dev.off()
+
+#### FIgure 9: KL for simulated experimental designs and ado ####
 pdf(file=paste(c('figures/','simulations_KL.pdf'),collapse=''),width = 8)
 par(oma=c(3,4,2,.7))
 layout(matrix(seq(1,6),nrow = 2,ncol = 3,byrow = T))
@@ -230,7 +281,7 @@ for(aa in 1:2){
 }
 dev.off()
 
-#### Figure 9 was done in matlab, code is in 'src/draftFigure.m' ####
+#### Figure 10 was done in matlab, code is in 'src/draftFigure.m' ####
 
 #### Appendinx ####
 # Plots 1 and 2 KL by participant and eage group
