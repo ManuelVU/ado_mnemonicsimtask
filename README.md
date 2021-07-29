@@ -1,7 +1,7 @@
-Adaptive Design Optimization for a Mnemonic Similatiry Task
+Adaptive Design Optimization for a Mnemonic Similarity Task
 ===========================================================
 
-This repository contains the results from the "Adaptive Design Optimization for a Mnemonic Similatiry Task" working paper. Files are divided in 4 main folders:
+This repository contains the results from the "Adaptive Design Optimization for a Mnemonic Similatiry Task" working paper. In order to be able to use the files in this repository one needs to open __ado_mnemonicsimtask.Rproj__ as a project in R, this is needed to make the paths used by functions and code to be the correct ones. Files are divided in 4 main folders:
 
 * __data__ : Contains experimental data and results form analysis.
 
@@ -68,3 +68,30 @@ There are 5 data files in the __data__ directory:
         - *sdt$optimal$ut*: Array with the KL divergence between prior and posterior distributions on a trial by trial basis. This array is divided in 3 dimentions, trials (192), participant (3) and age group (1 = Young, 2 = Elderly).
         - *sdt$optimal$expdes*: Array with the stimulus presented in the ADO simulation. This array is organized in 3 dimentions, trials (192), participant (3) and age group (1 = Young, 2 = Elderly).
         - *sdt$optimal$kl*: Array with the expected KL divergence by stimulus type in a trial bytrial basis. This array is divided in 4 dimentions, parameter (k, d'<sub>1</sub>, ..., d'<sub>new</sub>), trials (192), participant (3) and age group (1 = Young, 2 = Elderly).
+
+# SRC files
+
+Directory __src__ contains contains 5 types of files dedicated to data analysis, storing functions, drawing figures, writting Bayesian graphical models and data parsing. These files are:
+
+* __Data analysis__: Files in this category contain code to implement the analysis using the non-contaminant, contaminant model and simulations. These filaes make use of functions in the __Functions.R__ file in the same directory. The files in this category are.
+    1. **ado_noncontaminant.R**: Data analysis using the non-contaminant model. The analysis is carried out on the original sequence of stimulus presented to the participant and with the ADO ordering independently. Results of this analysis are stored in the file __signaldt.RData__.
+    2. **ado_contaminant.R**: Data analysis using the contaminant model. The analysis is carried out on the original sequence of stimulus and on the ADO ordering independently. Results of this analysis are stored in the file __contaminant_sdt.RData__.
+    3. **simulation.R**: This file simulates data usingt the non-contaminant model and does a data analysis using the contaminant model. Results from this analysis are stored on the file __simulation_multiple_designs.Rdata__.
+
+* __Bayesian graphical models__: This files write the Bayesian graphical models used by different functions using a "*.txt*" format. The files in this category are:
+    1. **write_noncontaminant.R**: Writtes non-contaminant Bayesian model used to expand the data for ADO use. The result of the code is stored on the file __noncontaminant.txt__.
+    2. **write_noncontaminant_individual_pred.R**: Writes non-contaminant Bayesian model used to analyze the data at the individual level. The result of the code is stored on the file __noncontaminant_individual_pred.txt__.
+    3. **write_contaminant.R**: Writtes contaminant Bayesian model used to expand the data for ADO use. The result of the code is stored on the file __contaminant.txt__.
+    4. **write_contaminant_individual_pred.R**: Writes contaminant Bayesian model used to analyze the data at the individual level. The result of the code is stored on the file __contaminant_individual_pred.txt__.
+
+* __Graphs__: Code used to generate the figures in the working paper and appendix. The files in this category are:
+    1. **plots.R**: Contains the code to produce Figures 1, 4, 5, 6, 7, 8 and 9. Also contains code to generate graphs found in the appendix section.
+    2. **drawfigures_1.m**: Contains code to produce Figure 2 and Figure 10. 
+
+* __data_t.R__: The code in this file is used to parse the raw data form the experiment found i the dile __StarkExp1.mat__. Output of the code is saved in the file __memory.Rdata__. 
+
+* __Functions.R__: This file contains the functions used for data analysis and in the ADO process along with two functions that allow to simulate behavior and calculate the KL divergence between two multivariate normal distributions. Files in the __Data analysis__ section use these functions.
+
+* __PntoneFall2016.mat__: File contains colors used in the figures in rgb format.
+
+* __pantoneColors.mat__: File contains colors used in figures 2 and 10 in rgb format.

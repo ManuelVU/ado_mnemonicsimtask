@@ -13,7 +13,7 @@ n.sub <- 20
 ages <- 2
 
 # load color pallete
-colors_pantone <- readMat('figures/PantoneFall2016.mat')
+colors_pantone <- readMat('src/PantoneFall2016.mat')
 colors.p <- c()
 for(i in 1:10){
   colors.p[i] <- rgb(colors_pantone$pantone[[i]], maxColorValue=1)
@@ -249,7 +249,7 @@ for(a in 1:ages){
 mtext(text = 'Proportion of stimulus presented',cex=1.3,outer=T,side=2,line=1)
 dev.off()
 
-#### FIgure 9: KL for simulated experimental designs and ado ####
+#### Figure 9: KL for simulated experimental designs and ado ####
 pdf(file=paste(c('figures/','simulations_KL.pdf'),collapse=''),width = 8)
 par(oma=c(3,4,2,.7))
 layout(matrix(seq(1,6),nrow = 2,ncol = 3,byrow = T))
