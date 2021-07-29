@@ -95,3 +95,15 @@ Directory __src__ contains contains 5 types of files dedicated to data analysis,
 * __PntoneFall2016.mat__: File contains colors used in the figures in rgb format.
 
 * __pantoneColors.mat__: File contains colors used in figures 2 and 10 in rgb format.
+
+# Models
+
+This directory contains the Bayesian graphical models written for use in JAGS as ".txt" files. The files are:
+* __noncontaminant.txt__: Code for the non-contaminant model that expands data in order to apply ADO method.
+* __noncontaminant_individual_pred.txt__: Code for the non-contaminant model. Can be used to generate posterior predictive distribution of the probability of a "yes" response.
+* __contaminant.txt__: Code for the contaminant model that expands data in order to apply ADO method.
+* __contaminant_individual_pred.txt__: Code for the contaminant model. Can be used to generate posterior predictive distribution of the probability of a "yes" response.
+
+# Figures 
+
+This directory contains the Figures from the working paper along with the ones used as examples and in the appendix section. There are also graphs at the individual level that where not used.
