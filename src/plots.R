@@ -6,6 +6,7 @@
 library(R.matlab)
 load("data/memory.RData")
 load('data/contaminant_sdt.RData')
+load("data/signaldt.RData")
 parameters <- 7
 times <- 192
 trials <- 192
@@ -159,7 +160,7 @@ lines(seq(1,192),klq[2,,2,2],col=col.al[3],lwd=1.7)
 mtext('Trial',side=1,outer=T,cex=1.3,line=1.2)
 dev.off()
 
-#### Figure 7: Stimulus used by method, examples used aisre young 15 (fig. 7) ####
+#### Figure 7: Stimulus used by method, examples used is young 15 (fig. 7) ####
 ylable <- c('Old','Lure 1','Lure 2','Lure 3','Lure 4','Lure 5','New')
 age.name <- c('Young','Elderly')
 for(aa in 1:ages){
@@ -344,8 +345,8 @@ for(aa in 1:ages){
            ylim=c(min(sdt$data$ci[,1,,pp,aa],sdt$optimal$ci[,1,,pp,aa]),
                   max(sdt$data$ci[,2,,pp,aa],sdt$optimal$ci[,2,,pp,aa])))
       if(ss==7){
-        mtext(expression(paste("d'")),side=2,las=2,line=2.3)
-        mtext("Trials",side=1,line=2.4)
+        mtext(expression(paste("d'")),side=2,las=2,line=2.3,cex=1.3)
+        mtext("Trials",side=1,line=3,cex=1.5)
       }
       mtext(paste(ylable[ss]),side=3)
       axis(1,at=c(1,50,100,150,192),cex.axis=1.15)
