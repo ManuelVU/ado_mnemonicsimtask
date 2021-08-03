@@ -4,9 +4,6 @@
 
 #### Load data and libraries needed ####
 library(R.matlab)
-load("data/memory.RData")
-load('data/contaminant_sdt.RData')
-load("data/signaldt.RData")
 parameters <- 7
 times <- 192
 trials <- 192
@@ -30,6 +27,7 @@ col.al <- rev(colors.p[c(4,1,8)])
 
 #### Figure 1: Proportion of new responses by age group ####
 # estimate the proportion of 'new' responses by participant in each population and for each stimulus type
+load("data/memory.RData")
 p.n <- array(NA,dim=c(n.sub,parameters,ages))
 for(a in 1:ages){
   for(i in 1:n.sub){
@@ -67,6 +65,7 @@ legend('topleft',legend = c("Young","Elderly"),pch=16,col=col.al[c(2,3)],bty='n'
 dev.off()
 
 #### Figure 4 and Figure 5: k and d' by participant, examples used are young 15 (fig. 4) and elderly 14 (fig.5) ####
+load('data/contaminant_sdt.RData')
 ylable <- c('Criterion','Lure 1','Lure 2','Lure 3','Lure 4','Lure 5','New')
 age.name <- c('Young','Elderly')
 for(aa in 1:ages){
@@ -86,12 +85,12 @@ for(aa in 1:ages){
            ylim=c(min(sdt$data$ci[,1,,pp,aa],sdt$optimal$ci[,1,,pp,aa]),
                   max(sdt$data$ci[,2,,pp,aa],sdt$optimal$ci[,2,,pp,aa])))
       if(ss==7){
-        mtext(expression(paste("d'")),side=2,las=2,line=2.3)
-        mtext("Trials",side=1,line=2.4)
+        mtext(expression(paste("d'")),side=2,las=2,line=2.3,cex=1.5)
+        mtext("Trial",side=1,line=3,cex=1.5)
       }
       mtext(paste(ylable[ss]),side=3)
-      axis(1,at=c(1,50,100,150,192),cex.axis=1.15)
-      axis(2,las=2,cex.axis=1.15)
+      axis(1,at=c(1,50,100,150,192),cex.axis=1.25)
+      axis(2,las=2,cex.axis=1.25)
       polygon(x=c(seq(1,times),rev(seq(1,times))),border=F,col=col.a[1],
               y=c(sdt$data$ci[ss,2,,pp,aa],rev(sdt$data$ci[ss,1,,pp,aa])))
       lines(seq(1,times),sdt$optimal$ci[ss,1,,pp,aa],col=col.al[aa+1],lwd=1.2)
@@ -107,15 +106,16 @@ for(aa in 1:ages){
     lines(smooth.spline(seq(1,dim(sdt$optimal$ut)[1]),sdt$optimal$ut[,pp,aa]),col=col.al[aa+1],lwd=2)
     points(seq(1,dim(sdt$data$ut)[1]),sdt$data$ut[,pp,aa],col=col.a[1],pch=16,cex=0.8)
     points(seq(1,dim(sdt$optimal$ut)[1]),sdt$optimal$ut[,pp,aa],col=col.a[aa+1],pch=16,cex=0.8)
-    axis(1,at=c(1,50,100,150,192),cex.axis=1.15)
-    axis(2,las=2,cex.axis=1.15)
-    mtext("KL Divergence",side=2,line=2.5)
+    axis(1,at=c(1,50,100,150,192),cex.axis=1.25)
+    axis(2,las=2,cex.axis=1.25)
+    mtext("KL Divergence",side=2,line=2.7,cex=1.1)
     abline(v=min(counts),col='slategray',lty=2)
     dev.off()
   }
 }
 
 #### Figure 6: KL quantiles by age group ####
+load('data/contaminant_sdt.RData')
 klq <- array(NA,dim=c(3,192,2,2))
 # obtain the quantiles of the KL divergence for each age group and each trial
 klq[1:3,,1,1] <- apply(sdt$data$ut[,,1],1,quantile)[c(2,3,4),]
@@ -160,7 +160,57 @@ lines(seq(1,192),klq[2,,2,2],col=col.al[3],lwd=1.7)
 mtext('Trial',side=1,outer=T,cex=1.3,line=1.2)
 dev.off()
 
-#### Figure 7: Stimulus used by method, examples used is young 15 (fig. 7) ####
+#### Figure 7: d' by participant non-contaminant model, (example used is elderly 14) ####
+load("data/signaldt.RData")
+ylable <- c('Criterion','Lure 1','Lure 2','Lure 3','Lure 4','Lure 5','New')
+age.name <- c('Young','Elderly')
+for(aa in 1:ages){
+  for(pp in 1:n.sub){
+    file.name <- paste(c('individualD_',bquote(.(age.name[aa])),'_nc',bquote(.(pp)),'.pdf'),collapse='')
+    pdf(file=paste(c('figures/individualdprime_noncontaminant/',file.name),collapse=''))
+    par(oma=c(2,2,2,.7))
+    layout(rbind(c(1,2),
+                 c(3,4),
+                 c(5,6),
+                 c(7,8)))
+    par(mai=c(0.3,0.5,0.2,0.1),xaxs="i",yaxs='i')
+    counts <- c()
+    for(ss in 1:7){
+      counts <- append(counts,which(sdt$optimal$storder[,1,pp,aa]==ss)[-c(1:table(results$st[,pp,aa])[ss])])
+      plot(0,0,xlim=c(-1,trials),type="n",axes=F,ann=F,
+           ylim=c(min(sdt$data$ci[,1,,pp,aa],sdt$optimal$ci[,1,,pp,aa]),
+                  max(sdt$data$ci[,2,,pp,aa],sdt$optimal$ci[,2,,pp,aa])))
+      if(ss==7){
+        mtext(expression(paste("d'")),side=2,las=2,line=2.3,cex=1.3)
+        mtext("Trial",side=1,line=3,cex=1.5)
+      }
+      mtext(paste(ylable[ss]),side=3)
+      axis(1,at=c(1,50,100,150,192),cex.axis=1.25)
+      axis(2,las=2,cex.axis=1.25)
+      polygon(x=c(seq(1,times),rev(seq(1,times))),border=F,col=col.a[1],
+              y=c(sdt$data$ci[ss,2,,pp,aa],rev(sdt$data$ci[ss,1,,pp,aa])))
+      lines(seq(1,times),sdt$optimal$ci[ss,1,,pp,aa],col=col.al[aa+1],lwd=1.2)
+      lines(seq(1,times),sdt$optimal$ci[ss,2,,pp,aa],col=col.al[aa+1],lwd=1.2)
+    }
+    plot(0,0,ylim=c(min(sdt$data$ut[,pp,aa],sdt$optimal$ut[,pp,aa]),
+                    max(sdt$data$ut[,pp,aa],sdt$optimal$ut[,pp,aa])),
+         type="n",axes=F,ann=F,xlim=c(0,dim(sdt$data$ut)[1]))
+    legend('topright',bty='n',col=c(col.al[1],col.al[aa+1]),
+           legend=c('Experiment','ADO'),cex=1.3,
+           pch=c(16,16))
+    lines(smooth.spline(seq(1,dim(sdt$data$ut)[1]),sdt$data$ut[,pp,aa]),col=col.al[1],lwd=2)
+    lines(smooth.spline(seq(1,dim(sdt$optimal$ut)[1]),sdt$optimal$ut[,pp,aa]),col=col.al[aa+1],lwd=2)
+    points(seq(1,dim(sdt$data$ut)[1]),sdt$data$ut[,pp,aa],col=col.a[1],pch=16,cex=0.8)
+    points(seq(1,dim(sdt$optimal$ut)[1]),sdt$optimal$ut[,pp,aa],col=col.a[aa+1],pch=16,cex=0.8)
+    axis(1,at=c(1,50,100,150,192),cex.axis=1.25)
+    axis(2,las=2,cex.axis=1.25,hadj = 0.8)
+    mtext("KL Divergence",side=2,line=2.7,cex=1.1)
+    abline(v=min(counts),col='slategray',lty=2)
+    dev.off()
+  }
+}
+#### Figure 8: Stimulus used by method, examples used is young 15 (fig. 7) ####
+load('data/contaminant_sdt.RData')
 ylable <- c('Old','Lure 1','Lure 2','Lure 3','Lure 4','Lure 5','New')
 age.name <- c('Young','Elderly')
 for(aa in 1:ages){
@@ -179,12 +229,12 @@ for(aa in 1:ages){
       plot(0,0,xlim=c(-1,trials),type="n",axes=F,ann=F,
            ylim=c(-0.05,1.2))
       if(ss==7){
-        mtext("Trials",side=1,line=3,cex=1.5)
+        mtext("Trial",side=1,line=3,cex=1.5)
       }
       mtext(paste(ylable[ss]),side=3)
       box(bty='l')
-      axis(1,at=c(1,50,100,150,192),cex.axis=1.15)
-      axis(2,at=seq(0,1,0.2),labels = c('0',seq(0.2,0.8,0.2),'1'),las=2,cex.axis=1.15)
+      axis(1,at=c(1,50,100,150,192),cex.axis=1.25)
+      axis(2,at=seq(0,1,0.2),labels = c('0',seq(0.2,0.8,0.2),'1'),las=2,cex.axis=1.25)
       optimal.order <- results$st[sdt$optimal$expdes[,pp,aa],pp,aa]
       lines(seq(1,times),cumsum(optimal.order==ss)/sum(optimal.order==ss),
             col=col.al[aa+1],lwd=1.2)
@@ -199,7 +249,8 @@ for(aa in 1:ages){
   }
 }
 
-#### Figure 8: proportion of used stimulus by trial ####
+#### Figure 9: proportion of used stimulus by trial ####
+load('data/contaminant_sdt.RData')
 col.l <- c(rgb(0.5843,0.3216,0.3176),
            rgb(0.9176,0.8510,0.5451),
            rgb(0.8322,0.8071,0.5859),
@@ -235,7 +286,6 @@ for(a in 1:ages){
   if(a==1){
     axis(2,at=seq(0,1,0.2),labels=c('0',seq(0.2,0.8,0.2),'1'),cex.axis=1.2,las=2,
          hadj = 0.8)
-    mtext(text = 'Trial',cex=1.3,side=1,line=2.6)
   }
   else{
     axis(2,at=seq(0,1,0.2),labels=rep('',6),cex.axis=1.2,las=2,
@@ -247,10 +297,12 @@ for(a in 1:ages){
           lty=dist[s],lwd=3)
   }
 }
-mtext(text = 'Proportion of stimulus presented',cex=1.3,outer=T,side=2,line=1)
+mtext(text = 'Proportion of stimulus presented',cex=1.5,outer=T,side=2,line=1.3)
+mtext('Trial',side=1,outer=T,cex=1.5,line=1.2)
 dev.off()
 
-#### Figure 9: KL for simulated experimental designs and ado ####
+#### Figure 10: KL for simulated experimental designs and ado ####
+load('data/simulation_multiple_designs.Rdata')
 pdf(file=paste(c('figures/','simulations_KL.pdf'),collapse=''),width = 8)
 par(oma=c(3,4,2,.7))
 layout(matrix(seq(1,6),nrow = 2,ncol = 3,byrow = T))
@@ -276,22 +328,21 @@ for(aa in 1:2){
     axis(2,las=2,cex.axis=1.5,hadj = 0.85)
     if(pp==1&aa==2){
       mtext("KL Divergence",side=2,line=1.9,outer=T,cex=1.5)
-      mtext("Trials",side=1,line=1.8,outer=T,cex=1.5)
+      mtext("Trial",side=1,line=1.8,outer=T,cex=1.5)
     }
   }
 }
 dev.off()
 
-#### Figure 10 was done in matlab, code is in 'src/draftFigure.m' ####
-
-#### Appendinx ####
+#### Figure 11 was done in MATLAB, code is in 'src/draftFigure.m' ####
+#### Appendix ####
 # Plots 1 and 2 KL by participant and eage group
 ylable <- c('Criterion','Lure 1','Lure 2','Lure 3','Lure 4','Lure 5','New')
-age.name <- c('Young','Old')
+age.name <- c('Young','Elderly')
 for(aa in 1:ages){
     file.name <- paste(c('KL_',bquote(.(age.name[aa])),'.pdf'),collapse='')
-    pdf(file=paste(c('Dropbox/signal_detection/smp2021/figures/KLage/',file.name),collapse=''),width = 8)
-    par(oma=c(2,2.3,2,.7))
+    pdf(file=paste(c('figures/appendix/',file.name),collapse=''),width = 8)
+    par(oma=c(3,3,2,.7))
     layout(matrix(seq(1,20),nrow = 4,ncol = 5,byrow = T))
     par(mai=c(0.2,0.2,0.2,0.1),xaxs="i",yaxs='i')
   for(pp in 1:n.sub){
@@ -311,65 +362,15 @@ for(aa in 1:ages){
     lines(smooth.spline(seq(1,dim(sdt$optimal$ut)[1]),sdt$optimal$ut[,pp,aa]),col=col.al[aa+1],lwd=2)
     points(seq(1,dim(sdt$data$ut)[1]),sdt$data$ut[,pp,aa],col=col.a[1],pch=16,cex=0.8)
     points(seq(1,dim(sdt$optimal$ut)[1]),sdt$optimal$ut[,pp,aa],col=col.a[aa+1],pch=16,cex=0.8)
-    axis(1,at=c(1,50,100,150,192),cex.axis=1.15)
-    axis(2,las=2,cex.axis=1.15)
+    axis(1,at=c(1,100,192),cex.axis=1.4)
+    axis(2,las=2,cex.axis=1.4)
     if(pp==11){
-      mtext("KL Divergence",side=2,line=2.5)
+      mtext("KL Divergence",side=2,line=3,cex=1.5)
     }
     if(pp==18){
-      mtext("Trials",side=1,line=2.4)
+      mtext("Trial",side=1,line=3,cex=1.5)
     }
     abline(v=min(counts),col='slategray',lty=2)
   }
   dev.off()
-}
-
-# Plot 3 individual d' by participant (example used is participant young 15)
-load('data/signaldt.RData')
-ylable <- c('Criterion','Lure 1','Lure 2','Lure 3','Lure 4','Lure 5','New')
-age.name <- c('Young','Elderly')
-for(aa in 1:ages){
-  for(pp in 1:n.sub){
-    file.name <- paste(c('individualD_',bquote(.(age.name[aa])),'_nc',bquote(.(pp)),'.pdf'),collapse='')
-    pdf(file=paste(c('figures/appendix/individualdprime_noncontaminant/',file.name),collapse=''))
-    par(oma=c(2,2,2,.7))
-    layout(rbind(c(1,2),
-                 c(3,4),
-                 c(5,6),
-                 c(7,8)))
-    par(mai=c(0.3,0.5,0.2,0.1),xaxs="i",yaxs='i')
-    counts <- c()
-    for(ss in 1:7){
-      counts <- append(counts,which(sdt$optimal$storder[,1,pp,aa]==ss)[-c(1:table(results$st[,pp,aa])[ss])])
-      plot(0,0,xlim=c(-1,trials),type="n",axes=F,ann=F,
-           ylim=c(min(sdt$data$ci[,1,,pp,aa],sdt$optimal$ci[,1,,pp,aa]),
-                  max(sdt$data$ci[,2,,pp,aa],sdt$optimal$ci[,2,,pp,aa])))
-      if(ss==7){
-        mtext(expression(paste("d'")),side=2,las=2,line=2.3,cex=1.3)
-        mtext("Trials",side=1,line=3,cex=1.5)
-      }
-      mtext(paste(ylable[ss]),side=3)
-      axis(1,at=c(1,50,100,150,192),cex.axis=1.15)
-      axis(2,las=2,cex.axis=1.15)
-      polygon(x=c(seq(1,times),rev(seq(1,times))),border=F,col=col.a[1],
-              y=c(sdt$data$ci[ss,2,,pp,aa],rev(sdt$data$ci[ss,1,,pp,aa])))
-      lines(seq(1,times),sdt$optimal$ci[ss,1,,pp,aa],col=col.al[aa+1],lwd=1.2)
-      lines(seq(1,times),sdt$optimal$ci[ss,2,,pp,aa],col=col.al[aa+1],lwd=1.2)
-    }
-    plot(0,0,ylim=c(min(sdt$data$ut[,pp,aa],sdt$optimal$ut[,pp,aa]),
-                    max(sdt$data$ut[,pp,aa],sdt$optimal$ut[,pp,aa])),
-         type="n",axes=F,ann=F,xlim=c(0,dim(sdt$data$ut)[1]))
-    legend('topright',bty='n',col=c(col.al[1],col.al[aa+1]),
-           legend=c('Experiment','ADO'),cex=1.3,
-           pch=c(16,16))
-    lines(smooth.spline(seq(1,dim(sdt$data$ut)[1]),sdt$data$ut[,pp,aa]),col=col.al[1],lwd=2)
-    lines(smooth.spline(seq(1,dim(sdt$optimal$ut)[1]),sdt$optimal$ut[,pp,aa]),col=col.al[aa+1],lwd=2)
-    points(seq(1,dim(sdt$data$ut)[1]),sdt$data$ut[,pp,aa],col=col.a[1],pch=16,cex=0.8)
-    points(seq(1,dim(sdt$optimal$ut)[1]),sdt$optimal$ut[,pp,aa],col=col.a[aa+1],pch=16,cex=0.8)
-    axis(1,at=c(1,50,100,150,192),cex.axis=1.15)
-    axis(2,las=2,cex.axis=1.15)
-    mtext("KL Divergence",side=2,line=2.5)
-    abline(v=min(counts),col='slategray',lty=2)
-    dev.off()
-  }
 }
