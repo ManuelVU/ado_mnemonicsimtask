@@ -1,6 +1,8 @@
-# This code can be used to generate the figures in the "Adaptive Design Optimization for a Mnemonic Similarity Task"
-# Figures in the paper are numbered in the code, however, it does not generate particular examples but figures for 
-# all participants when needed. Figures 2 and 3 are examples and are generated independently.
+# This code can be used to generate the figures in the "Adaptive Design 
+# Optimization for a Mnemonic Similarity Task" Figures in the paper are 
+# numbered in the code, however, it does not generate particular examples but 
+# figures for all participants when needed. Figures 2 and 3 are examples and 
+# are generated independently.
 
 #### Load data and libraries needed ####
 library(R.matlab)
@@ -374,3 +376,110 @@ for(aa in 1:ages){
   }
   dev.off()
 }
+#### Revisions ####
+# Plot 1: number of trials to proportion of KL ----
+load('data/contaminant_sdt.RData')
+max_kl <- matrix(NA, nrow = n.sub, ncol = ages)
+max_kl_young_optimal <- apply(X = sdt$optimal$ut[,,1], MARGIN = 2, FUN = max)
+max_kl_young_data <- apply(X = sdt$data$ut[,,1], MARGIN = 2, FUN = max)
+
+max_kl[,1] <- apply(X = cbind(max_kl_young_data, max_kl_young_optimal),
+                    MARGIN = 1, FUN = max)
+
+max_kl_elder_optimal <- apply(X = sdt$optimal$ut[,,2], MARGIN = 2, FUN = max)
+max_kl_elder_data <- apply(X = sdt$data$ut[,,2], MARGIN = 2, FUN = max)
+
+max_kl[,2] <- apply(X = cbind(max_kl_elder_data, max_kl_elder_optimal),
+                    MARGIN = 1, FUN = max)
+
+percentage_below <- c(0.99,rev(seq(0.2,0.99,0.05)))
+
+trial_lower_ut_optimal <- array(NA, dim = c(length(percentage_below),
+                                            length(max_kl[,1]),
+                                            ages))
+
+trial_lower_ut_data <- array(NA, dim = c(length(percentage_below),
+                                         length(max_kl[,1]),
+                                         ages))
+
+for(pp in 1:ages){
+  for(i in 1:n.sub){
+    count <- 0
+    for(j in percentage_below){
+      count <- count + 1
+      trial_lower_ut_optimal[count,i,pp] <- ifelse(test = is.finite(
+        min(which(sdt$optimal$ut[,i,pp] <= max_kl[i,pp]*j))),
+        yes = min(which(sdt$optimal$ut[,i,1] <= max_kl[i,pp]*j)),
+        no = 192)
+      
+      trial_lower_ut_data[count,i,pp] <- ifelse(test = is.finite(
+        min(which(sdt$data$ut[,i,pp] <= max_kl[i,pp]*j))),
+        yes = min(which(sdt$data$ut[,i,pp] <= max_kl[i,pp]*j)),
+        no = 192)
+    }
+  }  
+}
+
+klq <- array(NA,dim=c(3,length(percentage_below),2,2))
+# obtain the quantiles of the KL divergence for each age group and each trial
+klq[1:3,,1,1] <- apply(X = trial_lower_ut_data[,,1], MARGIN = 1, 
+                       FUN = quantile, p = c(0.25,0.5,0.75))
+klq[1:3,,2,1] <- apply(X = trial_lower_ut_data[,,2], MARGIN = 1, 
+                       FUN = quantile, p = c(0.25,0.5,0.75))
+klq[1:3,,1,2] <- apply(X = trial_lower_ut_optimal[,,1], MARGIN = 1, 
+                       FUN = quantile, p = c(0.25,0.5,0.75))
+klq[1:3,,2,2] <- apply(X = trial_lower_ut_optimal[,,2], MARGIN = 1, 
+                       FUN = quantile, p = c(0.25,0.5,0.75))
+
+pdf(file='figures/trials-prop-KL.pdf',width=8,height = 4)
+
+par(oma=c(2.3,3,1,1))
+layout(t(c(1,2)))
+par(mai=c(0.3,0.3,0.2,0.1),xaxs="i",yaxs='i')
+
+plot(percentage_below, klq[1,,1,1] , ylim = c(0, max(klq[,,1,])), 
+     xlim = rev(range(percentage_below)), type='n', axes = F, ann = F)
+
+box(bty = 'l')
+axis(1)
+axis(2, las = 2)
+
+polygon(c(percentage_below, rev(percentage_below)),
+        c(klq[3,,1,1], rev(klq[1,,1,1])),
+        col = col.a[1], border = FALSE)
+lines(percentage_below, klq[2,,1,1], col = col.al[1], lwd = 1.7)
+
+polygon(c(percentage_below, rev(percentage_below)),
+        c(klq[3,,1,2], rev(klq[1,,1,2])),
+        col = col.a[2], border = FALSE)
+lines(percentage_below, klq[2,,1,2], col = col.al[2], lwd = 1.7)
+
+mtext('Trials', side = 2, line = 2.5, cex = 1.3)
+legend('topleft', bty = 'n',pch = c(16, 16), col = col.al[c(1,2)],
+       legend = c('Experiment', 'ADO'))
+mtext('Young', side = 3, cex = 1.3, line = 0.5)
+
+plot(percentage_below, klq[1,,2,1], ylim = c(0, max(klq[,,2,])),
+     xlim = rev(range(percentage_below)), type = 'n', axes = FALSE, ann = FALSE)
+
+box(bty = 'l')
+axis(1)
+axis(2, las = 2)
+
+polygon(c(percentage_below, rev(percentage_below)),
+        c(klq[3,,2,1], rev(klq[1,,2,1])),
+        col = col.a[1], border = FALSE)
+lines(percentage_below, klq[2,,2,1], col = col.al[1], lwd = 1.7)
+
+polygon(c(percentage_below, rev(percentage_below)),
+        c(klq[3,,2,2], rev(klq[1,,2,2])),
+        col = col.a[3], border = FALSE)
+lines(percentage_below, klq[2,,2,2],col = col.al[3], lwd = 1.7)
+
+mtext('Old',side = 3,cex = 1.3,line = 0.5)
+legend('topleft', bty='n', pch=c(16,16), col = col.al[c(1,3)],
+       legend = c('Experiment','ADO'))
+
+mtext("Proportion of max KL", side = 1, outer = TRUE , cex = 1.3, line = 1.2)
+
+dev.off()
