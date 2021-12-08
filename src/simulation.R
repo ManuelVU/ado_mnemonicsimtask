@@ -20,7 +20,7 @@ for(aa in 1:2){
   }
 }
 
-# chose the 3 participants that are closer to the 25, 50 and 75% accuracy in the task from each popylation
+# chose the 3 participants that are closer to the 25, 50 and 75% accuracy in the task from each population
 p.sim <- cbind(c(which.min((cr[,1]-quantile(cr[,1],probs = 0.25))^2),
                  which.min((cr[,1]-quantile(cr[,1],probs = 0.5))^2),
                  which.min((cr[,1]-quantile(cr[,1],probs = 0.75))^2)),

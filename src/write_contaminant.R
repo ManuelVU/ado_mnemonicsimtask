@@ -1,5 +1,5 @@
 #This function writes the contaminant model used on expanded data
-  write("
+write("
   model{
   # Prior hyperparameters for discriminability
   for(i in 1:part){
