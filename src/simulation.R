@@ -6,12 +6,14 @@
 
 rm(list=ls())
 #### Load data and functions ####
+library(tictoc)
 load('data/memory.RData')
-source("src/od_memory.R")
+source("src/Functions.R")
 load('data/contaminant_sdt.RData')
 original <- sdt
 
 #### Participant selection ####
+tic("total_experimental")
 cr <- matrix(NA,nrow=20,ncol=2)
 for(aa in 1:2){
   for(ss in 1:20){
@@ -100,7 +102,7 @@ for(a in 1:ages){
     }
   }
 }
-
+toc()
 #### Trial by trial optimal design ####
 parameters <- 7
 times <- 192
@@ -113,9 +115,10 @@ sdt$optimal$ci <- array(NA,dim=c(parameters,6,times,n.sub,ages))
 sdt$optimal$ut <- array(NA,dim=c(times,n.sub,ages))
 sdt$optimal$expdes <- array(NA,dim=c(times,n.sub,ages))
 sdt$optimal$storder <- array(NA,dim=c(times,parameters,n.sub,ages))
-
+tic("total")
 for(aa in 1:ages){
   for(pp in 1:n.sub){
+    tic("single")
     for(tt in 1:times){
       if(tt==1){
         new.design <- sample(seq(1,7),size = 1)
@@ -147,8 +150,9 @@ for(aa in 1:ages){
                                           prior.mu = mean.vector[,pp,aa],
                                           prior.sigma = var.matrix[,,pp,aa])
     }
+    toc()
   }
 }
-
+toc()
 # save results 
 save(sdt, file = 'data/simulation_multiple_designs.Rdata')
