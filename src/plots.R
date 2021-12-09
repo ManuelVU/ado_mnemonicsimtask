@@ -483,3 +483,47 @@ legend('topleft', bty='n', pch=c(16,16), col = col.al[c(1,3)],
 mtext("Proportion of max KL", side = 1, outer = TRUE , cex = 1.3, line = 1.2)
 
 dev.off()
+
+# Plot 2: Savage dickey density ratio for boundary = 0.01 ----
+load("data/bf-contaminant-model.RData")
+
+pdf(file='figures/bayes-factors.pdf',width=8,height = 4)
+par(oma=c(2.3,4,1,1))
+layout(t(c(1,2)))
+par(mai=c(0.3,0.3,0.2,0.1))
+
+plot(seq(1, 20), -log(bf[,1]), axes = FALSE, ann = FALSE, 
+     xlim = c(1,20), pch = 21, col = rep(col.al[2], each = n.sub),
+     bg = rep(col.a[2], each = n.sub),
+     ylim = c(-4,4))
+abline(h = 0, lty = 3, col = "#36454F", lwd = 1.2)
+
+box(bty = "l")
+axis(1, at = c(seq(1,20,4),20))
+axis(2, las = 2, at = log(c(sqrt(10), 10, sqrt(10)^3)), 
+     labels = c(expression(10^(1/2)),10,expression(10^(3/2))), hadj = 0.84)
+axis(2, las = 2, at = c(-log(sqrt(10)), -log(10), -log(sqrt(10)^3), 0), 
+     labels = c(expression(1/10^(1/2)), "1/10", expression(1/10^(3/2)), 1),
+     hadj = 0.885)
+
+mtext('Young', side = 3, cex = 1.3, line = 0.5)
+mtext('Bayes Factor', side = 2, line = 4.3, cex = 1.3)
+
+plot(seq(1, 20), -log(bf[,2]), axes = FALSE, ann = FALSE, 
+     xlim = c(1,20), pch = 21, col = rep(col.al[3], each = n.sub),
+     bg = rep(col.a[3], each = n.sub),
+     ylim = c(-4,4))
+abline(h = 0, lty = 3, col = "#36454F", lwd = 1.2)
+
+box(bty = "l")
+axis(1, at = c(seq(1,20,4),20))
+axis(2, las = 2, at = log(c(sqrt(10), 10, sqrt(10)^3)), 
+     labels = rep("", 3))
+axis(2, las = 2, at = c(-log(sqrt(10)), -log(10), -log(sqrt(10)^3), 0), 
+     labels = rep("", 4))
+
+mtext('Old',side = 3,cex = 1.3,line = 0.5)
+
+mtext("Participant", side = 1, outer = TRUE , cex = 1.3, line = 1.2)
+
+dev.off()
