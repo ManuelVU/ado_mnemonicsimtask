@@ -377,22 +377,20 @@ for(aa in 1:ages){
   dev.off()
 }
 #### Revisions ####
-# Plot 1: number of trials to proportion of KL ----
+# Plot 1 Number of trials to proportion reduction --------------------------
 load('data/contaminant_sdt.RData')
 max_kl <- matrix(NA, nrow = n.sub, ncol = ages)
 max_kl_young_optimal <- apply(X = sdt$optimal$ut[,,1], MARGIN = 2, FUN = max)
 max_kl_young_data <- apply(X = sdt$data$ut[,,1], MARGIN = 2, FUN = max)
-
 max_kl[,1] <- apply(X = cbind(max_kl_young_data, max_kl_young_optimal),
                     MARGIN = 1, FUN = max)
 
 max_kl_elder_optimal <- apply(X = sdt$optimal$ut[,,2], MARGIN = 2, FUN = max)
 max_kl_elder_data <- apply(X = sdt$data$ut[,,2], MARGIN = 2, FUN = max)
-
 max_kl[,2] <- apply(X = cbind(max_kl_elder_data, max_kl_elder_optimal),
                     MARGIN = 1, FUN = max)
 
-percentage_below <- c(0.99,rev(seq(0.2,0.99,0.05)))
+percentage_below <- c(0.3, 0.1, 0.05, 0.01, 0.005)
 
 trial_lower_ut_optimal <- array(NA, dim = c(length(percentage_below),
                                             length(max_kl[,1]),
@@ -420,69 +418,85 @@ for(pp in 1:ages){
   }  
 }
 
-klq <- array(NA,dim=c(3,length(percentage_below),2,2))
-# obtain the quantiles of the KL divergence for each age group and each trial
-klq[1:3,,1,1] <- apply(X = trial_lower_ut_data[,,1], MARGIN = 1, 
-                       FUN = quantile, p = c(0.25,0.5,0.75))
-klq[1:3,,2,1] <- apply(X = trial_lower_ut_data[,,2], MARGIN = 1, 
-                       FUN = quantile, p = c(0.25,0.5,0.75))
-klq[1:3,,1,2] <- apply(X = trial_lower_ut_optimal[,,1], MARGIN = 1, 
-                       FUN = quantile, p = c(0.25,0.5,0.75))
-klq[1:3,,2,2] <- apply(X = trial_lower_ut_optimal[,,2], MARGIN = 1, 
-                       FUN = quantile, p = c(0.25,0.5,0.75))
+percentage_below <- rev(seq(0.05,0.5,0.05))
 
-pdf(file='figures/trials-prop-KL.pdf',width=8,height = 4)
+trial_lower_ut_optimal <- array(NA, dim = c(length(percentage_below),
+                                            length(max_kl[,1]),
+                                            ages))
 
+trial_lower_ut_data <- array(NA, dim = c(length(percentage_below),
+                                         length(max_kl[,1]),
+                                         ages))
+
+for(pp in 1:ages){
+  for(i in 1:n.sub){
+    count <- 0
+    for(j in percentage_below){
+      count <- count + 1
+      trial_lower_ut_optimal[count,i,pp] <- ifelse(test = is.finite(
+        min(which(sdt$optimal$ut[,i,pp] <= max_kl[i,pp]*j))),
+        yes = min(which(sdt$optimal$ut[,i,1] <= max_kl[i,pp]*j)),
+        no = 192)
+      
+      trial_lower_ut_data[count,i,pp] <- ifelse(test = is.finite(
+        min(which(sdt$data$ut[,i,pp] <= max_kl[i,pp]*j))),
+        yes = min(which(sdt$data$ut[,i,pp] <= max_kl[i,pp]*j)),
+        no = 192)
+    }
+  }  
+}
+
+# PLOT Proportion reduction quantiles
+
+pdf(file='figures/klreduction-trials.pdf', width=8, height = 4)
 par(oma=c(2.3,3,1,1))
 layout(t(c(1,2)))
 par(mai=c(0.3,0.3,0.2,0.1),xaxs="i",yaxs='i')
 
-plot(percentage_below, klq[1,,1,1] , ylim = c(0, max(klq[,,1,])), 
-     xlim = rev(range(percentage_below)), type='n', axes = F, ann = F)
+plot(0,0,ylim=c(-0.5,9.5),xlim=c(1,120), axes = FALSE, ann = FALSE, type = "n")
+box(bty = "l")
+mtext("KL Divergence Reduction", side = 2, line = 2.8, cex = 1.7)
+axis(side = 1, at = c(1,seq(50,150,50),192))
+axis(side = 2, las = 2, at = seq(0,9), 
+     labels = rev(c("50%", "55%", "60%", "65%", "70%", 
+                    "75%", "80%", "85%", "90%", "95%")), hadj = 0.7, tck = -0.02)
+mtext('Young', side = 3, cex = 1.6, line = 0.2)
+legend('topright',bty='n',pch=c(16,16),col=col.al[c(1,2)],
+       legend=c('Experiment','ADO'), pt.cex = 1.3, cex = 1.4)
+for(i in 1:length(percentage_below)){
+  qx <- quantile(trial_lower_ut_optimal[i,,1])
+  qy <- quantile(trial_lower_ut_data[i,,1])
+  
+  segments(x0 = c(qx[2], qy[2]), y0 = c((10-i) + 0.09, (10-i) - 0.09), 
+           x1 = c(qx[4],qy[4]), y1 = c((10-i) + 0.09, (10-i) - 0.09), 
+           col = c(col.al[2], col.al[1]), lwd = 1.5)
+  
+  points(c(qx[3],qy[3]), c((10-i) + 0.09, (10-i) - 0.09), pch = 21, 
+         bg = c(col.al[2], col.al[1]), col = c(col.a[2], col.a[1]), cex = 1.1)
+}
 
-box(bty = 'l')
-axis(1)
-axis(2, las = 2)
-
-polygon(c(percentage_below, rev(percentage_below)),
-        c(klq[3,,1,1], rev(klq[1,,1,1])),
-        col = col.a[1], border = FALSE)
-lines(percentage_below, klq[2,,1,1], col = col.al[1], lwd = 1.7)
-
-polygon(c(percentage_below, rev(percentage_below)),
-        c(klq[3,,1,2], rev(klq[1,,1,2])),
-        col = col.a[2], border = FALSE)
-lines(percentage_below, klq[2,,1,2], col = col.al[2], lwd = 1.7)
-
-mtext('Trials', side = 2, line = 2.5, cex = 1.3)
-legend('topleft', bty = 'n',pch = c(16, 16), col = col.al[c(1,2)],
-       legend = c('Experiment', 'ADO'))
-mtext('Young', side = 3, cex = 1.3, line = 0.5)
-
-plot(percentage_below, klq[1,,2,1], ylim = c(0, max(klq[,,2,])),
-     xlim = rev(range(percentage_below)), type = 'n', axes = FALSE, ann = FALSE)
-
-box(bty = 'l')
-axis(1)
-axis(2, las = 2)
-
-polygon(c(percentage_below, rev(percentage_below)),
-        c(klq[3,,2,1], rev(klq[1,,2,1])),
-        col = col.a[1], border = FALSE)
-lines(percentage_below, klq[2,,2,1], col = col.al[1], lwd = 1.7)
-
-polygon(c(percentage_below, rev(percentage_below)),
-        c(klq[3,,2,2], rev(klq[1,,2,2])),
-        col = col.a[3], border = FALSE)
-lines(percentage_below, klq[2,,2,2],col = col.al[3], lwd = 1.7)
-
-mtext('Old',side = 3,cex = 1.3,line = 0.5)
-legend('topleft', bty='n', pch=c(16,16), col = col.al[c(1,3)],
-       legend = c('Experiment','ADO'))
-
-mtext("Proportion of max KL", side = 1, outer = TRUE , cex = 1.3, line = 1.2)
-
+plot(0,0,ylim=c(-0.5,9.5),xlim=c(1,120), axes = FALSE, ann = FALSE, type = "n")
+box(bty = "l")
+legend('topright',bty='n',pch=c(16,16),col=col.al[c(1,3)],
+       legend=c('Experiment','ADO'), pt.cex = 1.3, cex = 1.4)
+axis(side = 1, at = c(1,seq(50,150,50),192))
+axis(side = 2, las = 2, at = seq(0,9), 
+     labels = rep("", 10))
+mtext('Elderly', side = 3, cex = 1.6, line = 0.2)
+for(i in 1:length(percentage_below)){
+  qx <- quantile(trial_lower_ut_optimal[i,,2])
+  qy <- quantile(trial_lower_ut_data[i,,2])
+  
+  segments(x0 = c(qx[2], qy[2]), y0 = c((10-i) + 0.09, (10-i) - 0.09), 
+           x1 = c(qx[4],qy[4]), y1 = c((10-i) + 0.09, (10-i) - 0.09), 
+           col = c(col.al[3], col.al[1]), lwd = 1.5)
+  
+  points(c(qx[3],qy[3]), c((10-i) + 0.09, (10-i) - 0.09), pch = 21, 
+         bg = c(col.al[3], col.al[1]), col = c(col.a[3], col.a[1]), cex = 1.1)
+}
+mtext('Trial', side = 1, outer = T, cex = 1.7, line=1.1)
 dev.off()
+
 
 # Plot 2: Savage dickey density ratio for boundary = 0.01 ----
 load("data/bf-contaminant-model.RData")
@@ -523,7 +537,129 @@ axis(2, las = 2, at = c(-log(sqrt(10)), -log(10), -log(sqrt(10)^3), 0),
      labels = rep("", 4))
 
 mtext('Old',side = 3,cex = 1.3,line = 0.5)
-
+mtext("KL-divergence reduction", side = 2, cex = 1.3, line = 2.5)
 mtext("Participant", side = 1, outer = TRUE , cex = 1.3, line = 1.2)
+dev.off()
+
+# Plot 3: Non-contaminant adequacy by participant -------------------------
+pdf(file = "figures/contaminant-adeq.pdf", width=8,height = 4)
+par(oma=c(2.3,3.3,1,1))
+layout(t(c(1,2)))
+par(mai=c(0.3,0.3,0.2,0.1),xaxs="i",yaxs='i')
+plot(x = seq(0.1,0.9,0.2), y = prop_response[1,], type = "n", pch = 21,
+     xlim = c(0,1), ylim = c(-0.05,1.05), ann = FALSE, axes = FALSE, col = col.al[2],
+     lwd = 1.5, cex=1.3, bg = col.a[2])
+abline(a = 0, b = 1, lwd = 1.5, lty = 2, col = "#4d4c5caa")
+segments(x0 = c(seq(0.1,0.9,0.2),seq(0.1,0.9,0.2)) , 
+         y0 = rep(prop_response[1,],2), 
+         x1 = c(seq(0.1,0.9,0.2),seq(0.1,0.9,0.2)),
+         y1 = c(prop_response[1,]-std_error[1,],
+                prop_response[1,]+std_error[1,]),
+         col = col.al[2], lwd = 1.3)
+lines(x = seq(0.1,0.9,0.2), y = prop_response[1,], type = "b", pch = 21,
+      col = col.al[2],lwd = 1.5, cex=1.1, bg = col.al[2])
+box(bty = "l")
+axis(1, at = seq(0.05,0.95, 0.1), 
+     labels = seq(0.05,1,0.1), cex.axis = 1)
+axis(2, las = 2, at = seq(0.05,0.95, 0.1), 
+     labels = seq(0.05,1,0.1))
+mtext("Young",side=3,cex=1.3,line=0.5)
+
+plot(x = seq(0.1,0.9,0.2), y = prop_response[2,], type = "n", pch = 21,
+     xlim = c(0,1), ylim = c(-0.05,1.05), ann = FALSE, axes = FALSE, col = col.al[3],
+     lwd = 1.5, cex=1.3, bg = col.al[3])
+abline(a = 0, b = 1, lwd = 1.5, lty = 2, col = "#4d4c5caa")
+lines(x = seq(0.1,0.9,0.2), y = prop_response[2,], type = "b", pch = 21,
+      col = col.al[3],lwd = 1.5, cex=1.1, bg = col.al[3])
+segments(x0 = c(seq(0.1,0.9,0.2),seq(0.1,0.9,0.2)) , 
+         y0 = rep(prop_response[2,],2), 
+         x1 = c(seq(0.1,0.9,0.2),seq(0.1,0.9,0.2)),
+         y1 = c(prop_response[2,]-std_error[2,],
+                prop_response[2,]+std_error[2,]),
+         col = col.al[3], lwd = 1.3)
+box(bty = "l")
+axis(1, at = seq(0.05,0.95, 0.1), 
+     labels = seq(0.05,1,0.1))
+axis(2, las = 2, at = seq(0.05,0.95, 0.1), 
+     labels = rep("",10))
+mtext("Elderly",side=3,cex=1.3,line=0.5)
+
+mtext(text = "Model's Mean Posterior Probability of New", side = 1, 
+      outer = TRUE, cex = 1.3, line = 1.2)
+mtext(text = "Average New Response", side = 2, outer = TRUE, cex = 1.3, 
+      line = 2)
+dev.off()
+
+# Plot 4: Quantile of simulations   ---------------------------------------
+load('data/simulation_multiple_designs.Rdata')
+klq <- array(NA,dim=c(3, trials, 3, ages, 2))
+# obtain the quantiles of the KL divergence for each age group and each trial
+for(t in 1:trials){
+  for(p in 1:3){
+    klq[1:3,t,p,1,1] <- quantile(sdt$data$ut[t,,p,1], probs = c(0.25,0.5,0.75))
+    klq[1:3,t,p,2,1] <- quantile(sdt$data$ut[t,,p,2], probs = c(0.25,0.5,0.75))
+    klq[1:3,t,p,1,2] <- quantile(sdt$optimal$ut[,t,p,1], probs = c(0.25,0.5,0.75))
+    klq[1:3,t,p,2,2] <- quantile(sdt$optimal$ut[,t,p,2], probs = c(0.25,0.5,0.75))
+  }
+}
+
+
+
+pdf(file='figures/quantile-simulations-KL.pdf',width=8,height = 5)
+par(oma=c(2.3,3,1,1))
+layout(rbind(c(1,2,3),
+             c(4,5,6)))
+par(mai=c(0.3,0.3,0.2,0.1),xaxs="i",yaxs='i')
+ylimits <- c(60,100,100)
+for(p in 1:3){
+  plot(seq(1,192),ylim=c(0,ylimits[p]),type='n',axes=F,ann=F)
+  box(bty='l')
+  axis(1,at=c(1,50,100,150,192))
+  axis(2,las=2)
+  
+  polygon(c(seq(1,192),rev(seq(1,192))),
+          c(klq[3,,p,1,1],rev(klq[1,,p,1,1])),
+          col=col.a[1],border=F)
+  lines(seq(1,192),klq[2,,p,1,1],col=col.al[1],lwd=1.7)
+  
+  polygon(c(seq(1,192),rev(seq(1,192))),
+          c(klq[3,,p,1,2],rev(klq[1,,p,1,2])),
+          col=col.a[2],border=F)
+  lines(seq(1,192),klq[2,,p,1,2],col=col.al[2],lwd=1.7)
+  if(p == 2){
+    mtext('Young',side=3,cex=1.3,line=-1.8)    
+  } 
+}
+
+legend('topright',bty='n',pch=c(16,16),col=col.al[c(1,2)],
+       legend=c('Experiment','ADO'), pt.cex = 1.3, cex=1.4)
+ylimits <- c(150, 150, 60)
+for(p in 1:3){
+  plot(seq(1,192),ylim=c(0,ylimits[p]),type='n',axes=F,ann=F)
+
+  box(bty='l')
+  axis(1,at=c(1,50,100,150,192))
+  axis(2,las=2)
+  
+  polygon(c(seq(1,192),rev(seq(1,192))),
+          c(klq[3,,p,2,1],rev(klq[1,,p,2,1])),
+          col=col.a[1],border=F)
+  lines(seq(1,192),klq[2,,p,2,1],col=col.al[1],lwd=1.7)
+  
+  polygon(c(seq(1,192),rev(seq(1,192))),
+          c(klq[3,,p,2,2],rev(klq[1,,p,2,2])),
+          col=col.a[3],border=F)
+  lines(seq(1,192),klq[2,,p,2,2],col=col.al[3],lwd=1.7)
+  if(p == 2){
+    mtext('Elderly',side=3,cex=1.3,line=-1.8)
+  } 
+}
+
+legend('topright',bty='n',pch=c(16,16),col=col.al[c(1,3)],
+       legend=c('Experiment','ADO'), pt.cex = 1.3, cex=1.4)
+
+mtext('Trial',side=1,outer=T,cex=1.3,line=1.2)
+mtext('KL Divergence',side=2,line=1,cex=1.3, outer = TRUE)
 
 dev.off()
+
