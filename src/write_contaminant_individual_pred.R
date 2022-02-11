@@ -1,4 +1,5 @@
-# This function writes the contaminant model used when the data is not expanded and is used at an individual level
+# This function writes the contaminant model used when the data is not expanded 
+# and is used at an individual level
 write("
   model{
 # Prior for discriminability individual level

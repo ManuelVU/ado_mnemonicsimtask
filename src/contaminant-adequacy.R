@@ -1,16 +1,33 @@
+# Data analysis using the contaminant model in other to draw samples from the 
+# posterior predictive distribution of P(R = 'new'). The posterior distribution
+# is used to calculate the accuracy of the model using the posterior mode
+
+# call R2jags library
 library(R2jags)
+
+# load experimental data
 load(file = "data/memory.RData")
+
+# number of trials per subject
 n_trials <- dim(results$res)[1]
+
+# number of participants per group
 n_participants <- dim(results$res)[2]
+
+# number of groups
 n_groups <- dim(results$res)[3]
+
+# number of stimulus types
 n_st_type <- length(unique(results$st[,1,1]))
 
+# data to be parsed to JAGS
 jags_data <- list(n_trials = n_trials,
                   n_participants = n_participants,
                   n_groups = n_groups,
                   stimulus = results$st,
                   responses = results$res)
 
+# save contaminant model as text object in R
 jags_model <-"model{
 # Prior for discriminability individual level
   for(a in 1:n_groups){
@@ -43,7 +60,7 @@ jags_model <-"model{
     }
   }
   
-# Posterior adequacy
+# Posterior distribution of P(R = 'new')
   for(a in 1:n_groups){
     for(i in 1:n_participants){
       for(t in 1:n_trials){
@@ -53,8 +70,10 @@ jags_model <-"model{
   }
 }"
 
+# posterior distributions to be saved in samples
 jags_parameter <- c("theta_hat")
 
+# save posterior distributions of contaminant model in samples object
 samples <- jags(data = jags_data,
                 parameters.to.save = jags_parameter,
                 model.file = textConnection(jags_model), 
@@ -64,6 +83,8 @@ samples <- jags(data = jags_data,
                 n.thin = 1,
                 DIC = TRUE)
 
+# extract posterior distribution of P(R = 'new')
 theta_hat <- samples$BUGSoutput$mean$theta_hat
 
+# save posterior distributions of P(R = 'new')
 save(theta_hat,file='data/contaminant-mean-theta.RData')
