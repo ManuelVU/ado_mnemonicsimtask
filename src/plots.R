@@ -663,3 +663,107 @@ mtext('KL Divergence',side=2,line=1,cex=1.3, outer = TRUE)
 
 dev.off()
 
+
+#### Review 2 ####
+load('data/simulation_multiple_designs.Rdata')
+
+designs <- 15
+
+max_kl <- array(data = NA, dim = c(designs, 3, ages, 2))
+
+max_kl[,,,1] <- apply(X = sdt$data$ut, MARGIN = c(2,3,4), FUN = max)
+max_kl[,,,2] <- apply(X = sdt$optimal$ut, MARGIN = c(1,3,4), FUN = max)
+
+min_kl <- array(data = NA, dim = c(designs, 3, ages, 2))
+
+min_kl[,,,1] <- sdt$data$ut[192,,,]
+min_kl[,,,2] <- sdt$optimal$ut[,192,,]
+
+percentage_below <- rev(seq(0.05,0.5,0.05))
+
+trial_lower_ut_optimal <- array(NA, dim = c(length(percentage_below),
+                                            designs, 3, ages))
+
+trial_lower_ut_data <- array(NA, dim = c(length(percentage_below),
+                                         designs, 3, ages))
+
+for(dd in 1:designs){
+  
+  for(pp in 1:ages){
+    
+    for(i in 1:3){
+      
+      count <- 0
+      
+      for(j in percentage_below){
+        
+        count <- count + 1
+        
+        trial_lower_ut_optimal[count, dd, i, pp] <- ifelse(test = is.finite(
+          min(which((sdt$optimal$ut[dd, , i, pp] - min_kl[dd, i, pp, 2]) <= 
+                      (max_kl[dd, i, pp, 2]- min_kl[dd, i, pp, 2])*j))),
+          yes = min(which((sdt$optimal$ut[dd, , i, pp] - min_kl[dd, i, pp, 2]) <= 
+                            (max_kl[dd, i, pp, 2]- min_kl[dd, i, pp, 2])*j)),
+          no = 192)
+        
+        trial_lower_ut_data[count, dd, i, pp] <- ifelse(test = is.finite(
+          min(which((sdt$data$ut[ , dd, i, pp] - min_kl[dd, i, pp, 1]) <= 
+                      (max_kl[dd, i, pp, 1]- min_kl[dd, i, pp, 1])*j))),
+          yes = min(which((sdt$data$ut[ , dd, i, pp] - min_kl[dd, i, pp, 1]) <= 
+                            (max_kl[dd, i, pp, 1]- min_kl[dd, i, pp, 1])*j)),
+          no = 192)
+      }
+    }
+  }
+}
+
+pdf(file='figures/klreduction-trials-simulation.pdf', width=8, height = 4)
+par(oma=c(2.3,3,1,1))
+layout(t(c(1,2)))
+par(mai=c(0.3,0.3,0.2,0.1),xaxs="i",yaxs='i')
+
+plot(0,0,ylim=c(-0.5,9.5),xlim=c(1,100), axes = FALSE, ann = FALSE, type = "n")
+box(bty = "l")
+mtext("KL Divergence Reduction", side = 2, line = 2.8, cex = 1.7)
+axis(side = 1, at = c(1,seq(50,150,50),192))
+axis(side = 2, las = 2, at = seq(0,9), 
+     labels = rev(c("50%", "55%", "60%", "65%", "70%", 
+                    "75%", "80%", "85%", "90%", "95%")), hadj = 0.7, tck = -0.02)
+mtext('Young', side = 3, cex = 1.6, line = 0.2)
+legend('topright',bty='n',pch=c(16,16),col=col.al[c(1,2)],
+       legend=c('Experiment','ADO'), pt.cex = 1.3, cex = 1.4)
+for(i in 1:length(percentage_below)){
+  qx <- quantile(trial_lower_ut_optimal[i,,,1])
+  qy <- quantile(trial_lower_ut_data[i,,,1])
+  
+  segments(x0 = c(qx[2], qy[2]), y0 = c((10-i) + 0.09, (10-i) - 0.09), 
+           x1 = c(qx[4],qy[4]), y1 = c((10-i) + 0.09, (10-i) - 0.09), 
+           col = c(col.al[2], col.al[1]), lwd = 1.5)
+  
+  points(c(qx[3],qy[3]), c((10-i) + 0.09, (10-i) - 0.09), pch = 21, 
+         bg = c(col.al[2], col.al[1]), col = c(col.a[2], col.a[1]), cex = 1.1)
+}
+
+plot(0,0,ylim=c(-0.5,9.5),xlim=c(1,160), axes = FALSE, ann = FALSE, type = "n")
+box(bty = "l")
+legend('topright',bty='n',pch=c(16,16),col=col.al[c(1,3)],
+       legend=c('Experiment','ADO'), pt.cex = 1.3, cex = 1.4)
+axis(side = 1, at = c(1,seq(50,150,50),192))
+axis(side = 2, las = 2, at = seq(0,9), 
+     labels = rep("", 10))
+mtext('Elderly', side = 3, cex = 1.6, line = 0.2)
+for(i in 1:length(percentage_below)){
+  qx <- quantile(trial_lower_ut_optimal[i,,,2])
+  qy <- quantile(trial_lower_ut_data[i,,,2])
+  
+  segments(x0 = c(qx[2], qy[2]), y0 = c((10-i) + 0.09, (10-i) - 0.09), 
+           x1 = c(qx[4],qy[4]), y1 = c((10-i) + 0.09, (10-i) - 0.09), 
+           col = c(col.al[3], col.al[1]), lwd = 1.5)
+  
+  points(c(qx[3],qy[3]), c((10-i) + 0.09, (10-i) - 0.09), pch = 21, 
+         bg = c(col.al[3], col.al[1]), col = c(col.a[3], col.a[1]), cex = 1.1)
+}
+mtext('Trial', side = 1, outer = T, cex = 1.7, line=1.1)
+dev.off()
+
+
