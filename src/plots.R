@@ -45,7 +45,7 @@ par(oma=c(4.5,4.5,0.1,0.1),
 centers <- rbind(seq(0,6)-0.125,seq(0,6)+0.125)
 plot(0,0,xlim=c(-0.2,6.2),ylim=c(-0.001,1.1),type="n",axes=F,ann=F)
 box(bty='l')
-axis(1, at=seq(0,6),labels = c('criterion','lure 1','lure 2','lure 3','lure 4','lure 5','new'),
+axis(1, at=seq(0,6),labels = c('old','lure 1','lure 2','lure 3','lure 4','lure 5','new'),
      cex.axis=1.5)
 axis(2,las=2,cex.axis=1.5,at=seq(0,1,0.2),labels=c('0',seq(0.2,0.8,0.2),'1'))
 for(a in 1:2){
